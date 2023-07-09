@@ -3,7 +3,7 @@ defmodule BskyRss.Rss do
 
   require Logger
 
-  def link(text) do
+  def find_link(text) do
     text
     |> ExAutolink.link()
     |> Floki.parse_fragment!()
@@ -39,19 +39,60 @@ defmodule BskyRss.Rss do
   def post(%FeedViewPost{
         post: %PostView{
           cid: cid,
+          uri: uri,
           record: %{"text" => text, "createdAt" => created_at},
-          author: %ProfileViewBasic{handle: handle, display_name: _display_name}
+          author: %ProfileViewBasic{handle: handle, display_name: display_name}
         }
       }) do
-    case link(text) do
+    case find_link(text) do
       nil ->
         nil
 
       link ->
+        Logger.metadata(link: link)
+
         %Readability.Summary{title: title, authors: _authors, article_html: article} =
           Readability.summarize(link)
 
-        RSS.item(title, "@#{handle}: #{text}\n\n#{article}", created_at, link, cid)
+        description =
+          desc(
+            handle: handle,
+            display_name: display_name,
+            text: text,
+            article: article,
+            post_id:
+              uri
+              |> String.split("/")
+              |> Enum.at(-1)
+          )
+
+        RSS.item(title, description, created_at, link, cid)
     end
+  rescue
+    e ->
+      Logger.error(
+        "Error summarizing post #{cid}: #{Exception.format(:error, e, Map.get(e, :stacktrace))}"
+      )
+
+      nil
+  after
+    Logger.metadata(link: nil)
+  end
+
+  def desc(assigns) do
+    """
+      <p>
+        <a href="https://https://bsky.app/profile/<%= handle %>"><%= display_name %></a>
+        <a href="https://bsky.app/profile/<%= handle %>/post/<%= post_id %>">post</a>
+      </p>
+      <p>
+        <%= text %>
+      </p>
+      <hr/>
+      <p>
+        <%= article %>
+      </p>
+    """
+    |> EEx.eval_string(assigns)
   end
 end
