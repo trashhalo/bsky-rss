@@ -18,6 +18,7 @@ defmodule BskyRssWeb.Router do
   end
 
   pipeline :bluesky do
+    plug LoggerJSON.Plug
     plug :auth
   end
 
@@ -52,6 +53,7 @@ defmodule BskyRssWeb.Router do
     {user, pass} = Plug.BasicAuth.parse_basic_auth(conn)
     client = Bsky.client()
     session = Auth.session(client, user, pass)
+    Logger.metadata(user: user)
 
     conn
     |> assign(:session, session)

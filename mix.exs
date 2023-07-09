@@ -50,7 +50,8 @@ defmodule BskyRss.MixProject do
       {:ex_autolink, "~> 0.2.0"},
       {:floki, "~> 0.34.0"},
       {:timex, "~> 3.7"},
-      {:readability, "~> 0.10.0"}
+      {:readability, "~> 0.10.0"},
+      {:logger_json, "~> 5.1"}
     ]
   end
 
