@@ -3,6 +3,8 @@ defmodule BskyRss.Rss do
 
   require Logger
 
+  @blocked_domains ["bsky.app"]
+
   def find_link(text) do
     text
     |> ExAutolink.link()
@@ -12,6 +14,12 @@ defmodule BskyRss.Rss do
       attrs
       |> Enum.into(%{})
       |> Map.get("href")
+    end)
+    |> Enum.reject(fn link ->
+      link
+      |> URI.parse()
+      |> Map.get(:host)
+      |> Enum.member?(@blocked_domains)
     end)
     |> List.first()
   end
