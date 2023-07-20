@@ -16,10 +16,11 @@ defmodule BskyRss.Rss do
       |> Map.get("href")
     end)
     |> Enum.reject(fn link ->
-      link
+      host = link
       |> URI.parse()
       |> Map.get(:host)
-      |> Enum.member?(@blocked_domains)
+
+      Enum.member?(@blocked_domains, host)
     end)
     |> List.first()
   end
