@@ -1,0 +1,22 @@
+{
+  "name": "bsky-rss",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5",
+    "@types/jsdom": "^21.1.6",
+    "bun-types": "latest"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.12.7",
+    "hono": "^4.3.2",
+    "feed": "^4.2.2",
+    "@extractus/article-extractor": "^8.0.8",
+    "marked": "^12.0.2",
+    "dompurify": "^3.1.2",
+    "jsdom": "^24.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
