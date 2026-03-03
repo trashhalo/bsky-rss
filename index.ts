@@ -36,7 +36,7 @@ app.use(
         return false;
       }
     },
-  })
+  }),
 );
 
 const blockedDomains = ["bsky.app"];
@@ -57,7 +57,7 @@ const findLink = (rt: RichText): string | undefined => {
 const validPostToItem = async (
   agent: BskyAgent,
   post: AppBskyFeedPost.Record,
-  author: ProfileViewBasic
+  author: ProfileViewBasic,
 ): Promise<Item | null> => {
   const rt = new RichText({
     text: post.text,
@@ -93,7 +93,10 @@ const validPostToItem = async (
   let title = post.embed?.title || `${post.text.slice(0, 50)}...`;
 
   try {
-    const article = await extract(link);
+    const timeout = new Promise<null>((_, reject) =>
+      setTimeout(() => reject(new Error("article extract timeout")), 5000)
+    );
+    const article = await Promise.race([extract(link), timeout]);
     if (article && article.content) {
       content = `
       ${content}
@@ -118,7 +121,7 @@ const validPostToItem = async (
 
 const postToItem = async (
   agent: BskyAgent,
-  post: FeedViewPost
+  post: FeedViewPost,
 ): Promise<Item | null> => {
   if (AppBskyFeedPost.isRecord(post.post.record)) {
     const res = AppBskyFeedPost.validateRecord(post.post.record);
@@ -148,7 +151,7 @@ app.get("/", async (c) => {
   const feedItems = await Promise.all(
     timeline.data.feed.map((post) => {
       return postToItem(agent, post);
-    })
+    }),
   );
   feedItems.forEach((item) => {
     if (item) {
